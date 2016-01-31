@@ -63,7 +63,9 @@ function test_git(cbT,cbF){
     });
   },cbF);//<-- for case where no .gitmodules exist.
 }
-function cli(image,args,workingdir,cb){// call image
+var npm_image='npm';// initializes to npm, on windows if the call fails, +.cmd
+
+function call_npm(args,workingdir,cb){// cb gets called if success.
   var proc,result_error=null,result_code=null;
   function procdone(err,code){
     var cbc=cb;cb=null;
@@ -74,8 +76,19 @@ function cli(image,args,workingdir,cb){// call image
     if(result_code !== 0){ return done([image+' exited with code:'+result_code],result_code||1); }
     return cbc();
   } try {
-    proc = spawn(image,args||[],{cwd:workingdir||undefined,env:process.env});
-    proc.on('error', function(err){ return procdone(err); });
+    proc = spawn(npm_image,args||[],{cwd:workingdir||undefined,env:process.env});
+    proc.on('error', function(err){
+      if(err.code === 'ENOENT'){
+        if(npm_image === 'npm'){
+          npm_image = 'npm.cmd';// <-- for windows.
+          var cbc = cb;
+          cb = null;
+          if(cbc){
+            return call_npm(args,workingdir,cbc)
+          }
+        }
+      }
+      return procdone(err); });
     proc.stdout.on('data', function(data){process.stdout.write(data);});
     proc.stderr.on('data', function(data){process.stderr.write(data);});
     proc.on('exit', function(code){ return procdone(null,code); });
@@ -97,8 +110,9 @@ function error_not_npm(){return done('Not an NPM install, exiting waterline inje
 function error_no_sails(){return done(pli(['Sails installation not found!','Ensure your package.json, which has sails-mysql-transaction, also includes sails.'],true),1)}
 
 function error_sails_mysql(){return done(pli(['Sails installation not found!','Ensure your package.json, which has sails-mysql-transaction, also includes sails.'],true),1)}
-
+var once=false;
 function main(){
+  if(once){return;}once=true;
   return test_git(error_not_npm, function(){
   return edi(MOD_DIR+'/sails', function(){
   return edi(MOD_DIR+'/sails-mysql', function(mysql_exists){
@@ -107,8 +121,8 @@ function main(){
 'Preferably remove sails-mysql from packages before using this in production.'])
     );}
     if(note)note('Injecting waterline...');
-    return cli('npm',['remove','waterline'],MOD_DIR+'/sails', function(){
-    return cli('npm',['install',MOD_DIR+'/sails-mysql-transactions/waterline'], MOD_DIR+'/sails', function(){
+    return call_npm(['remove','waterline'],MOD_DIR+'/sails', function(){
+    return call_npm(['install',MOD_DIR+'/sails-mysql-transactions/waterline'], MOD_DIR+'/sails', function(){
       return done('Installation successful.',0);
     });// npm install
     });// npm remove
