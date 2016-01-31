@@ -28,6 +28,15 @@ function edi(path,cbT,cbF){//exists dir
   function _ws(err,stat){return ctf((!err)&&stat&&stat.isDirectory&&stat.isDirectory(),cbT,cbF);}
   try{return fs.stat(path,_ws);}catch(e){return ftc(false,cbT,cbF);}
 }
+function realdir(path,cb){
+  return fs.realpath(path, function(err,full){
+    if(err){
+      console.log(err,err.stack||'');
+      return done(null,1);
+    }
+    return cb(full);
+  });
+}
 function test_git(cbT,cbF){
   return efi('.gitmodules',function(){// true callback..
 
@@ -107,8 +116,6 @@ function error_not_npm(){return done('Not an NPM install, exiting waterline inje
 //# Check whether sails has been already installed or not. If not, this is an
 //# error and we should not proceed.
 function error_no_sails(){return done(pli(['Sails installation not found!','Ensure your package.json, which has sails-mysql-transaction, also includes sails.'],true),1)}
-
-function error_sails_mysql(){return done(pli(['Sails installation not found!','Ensure your package.json, which has sails-mysql-transaction, also includes sails.'],true),1)}
 var once=false;
 function main(){
   if(once){return;}once=true;
@@ -120,14 +127,18 @@ function main(){
 'Preferably remove sails-mysql from packages before using this in production.'])
     );}
     if(note)note('Injecting waterline...');
-    return call_npm(['remove','waterline'],MOD_DIR+'/sails', function(){
-    return call_npm(['install',MOD_DIR+'/sails-mysql-transactions/waterline/'], MOD_DIR+'/sails', function(){
-      return done('Installation successful.',0);
+    return realdir(MOD_DIR+'/sails',function(sailsnm){
+    return realdir(MOD_DIR+'/sails-mysql-transactions/waterline',function(wlnm){
+    return call_npm(['remove','waterline'],sailsnm, function(){
+    return call_npm(['install',wlnm], sailsnm, function(){
+    return done('Installation successful.',0);
     });// npm install
     });// npm remove
-  });// /sails-mysql
-  },error_no_sails);// /sails
-  });// .gitmodules
+    });// realdir modified waterline.
+    });// realdir sails
+  });// exists /sails-mysql
+  },error_no_sails);// exists /sails
+  });// exists .gitmodules
 }
 
 function prt(message_lines){
