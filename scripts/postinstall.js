@@ -54,7 +54,6 @@ function test_git(cbT,cbF){
             deps.indexOf('/tarball/') !== -1)||str['transaction-tarball']==='true'){
                 // loaded from tarball, treat as if its not github.
                 return ctf(false,cbT,cbF);
-            }
           }
         }
       }
