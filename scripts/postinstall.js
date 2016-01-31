@@ -83,7 +83,7 @@ function test_git(cbT,cbF){
                           }
                           searchIndex = line.indexOf('path = ');
                           if(searchIndex!==-1){
-                            waterlineUrl=line.substring(searchIndex+'path = '.length);
+                            waterlinePath=line.substring(searchIndex+'path = '.length);
                             continue;
                           }
                           searchIndex = line.indexOf('branch = ');
