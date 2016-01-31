@@ -37,6 +37,7 @@ function realdir(path,cb){
     return cb(full);
   });
 }
+var waterline_git=null;
 function test_git(cbT,cbF){
   return efi('.gitmodules',function(){// true callback..
 
@@ -62,7 +63,53 @@ function test_git(cbT,cbF){
           if((deps && deps.indexOf('//github.com/')!==-1 &&
             deps.indexOf('/tarball/') !== -1)||str['transaction-tarball']==='true'){
                 // loaded from tarball, treat as if its not github.
-                return ctf(false,cbT,cbF);
+
+                // but, we do need to modify waterline_src.
+                return fs.readFile('.gitmodules', 'utf8', function (err, data){
+                  if(!err) {
+                    var lines= data.split('\n'),line;
+                    var lineNumber;
+                    var searchIndex;
+                    var waterlinePath, waterlineBranch, waterlineUrl;
+                    for(lineNumber=0;lineNumber<lines.length;lineNumber++){
+                      line = lines[lineNumber];
+                      if(line.indexOf('"waterline"]')!==-1){
+                        while(++lineNumber<lines.length){
+                          line = lines[lineNumber];
+                          searchIndex = line.indexOf('url = ');
+                          if(searchIndex!==-1){
+                            waterlineUrl=line.substring(searchIndex+'url = '.length);
+                            continue;
+                          }
+                          searchIndex = line.indexOf('path = ');
+                          if(searchIndex!==-1){
+                            waterlineUrl=line.substring(searchIndex+'path = '.length);
+                            continue;
+                          }
+                          searchIndex = line.indexOf('branch = ');
+                          if(searchIndex!==-1){
+                            waterlineBranch=line.substring(searchIndex+'branch = '.length);
+                            continue;
+                          }
+                          searchIndex = line.indexOf('[submodule');
+                          if(searchIndex!==-1){
+                            break;
+                          }
+                        }
+                        break;
+                      }
+                    }
+                    if(waterlinePath && waterlineUrl){
+                      if(waterlineBranch){
+                        waterline_git=waterlineUrl+'#'+waterlineBranch;
+                      }else{
+                        waterline_git=waterlineUrl;
+                      }
+                      return ctf(false,cbT,cbF);
+                    }
+                  }
+                  return ctf(true,cbT,cbF);
+                });
           }
         }
       }
@@ -130,7 +177,7 @@ function main(){
     return realdir(MOD_DIR+'/sails',function(sailsnm){
     return realdir(MOD_DIR+'/sails-mysql-transactions/waterline',function(wlnm){
     return call_npm(['remove','waterline'],sailsnm, function(){
-    return call_npm(['install',wlnm], sailsnm, function(){
+    return call_npm(['install',waterline_git||wlnm], sailsnm, function(){
     return done('Installation successful.',0);
     });// npm install
     });// npm remove
