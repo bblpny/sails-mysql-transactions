@@ -60,7 +60,7 @@ function test_git(cbT,cbF){
       }
       // otherwise, yes, github.
       return ctf(true,cbT,cbF);
-    }
+    });
   },cbF);//<-- for case where no .gitmodules exist.
 }
 function cli(image,args,workingdir,cb){// call image
