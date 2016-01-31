@@ -73,7 +73,7 @@ function call_npm(args,workingdir,cb){// cb gets called if success.
     result_code=(code === 0 || code) ? (result_code||code) : result_code;
     if(!cbc)return;
     if(result_error){ console.log(result_error,result_error.stack||''); return done(null,result_code||1); }
-    if(result_code !== 0){ return done([image+' exited with code:'+result_code],result_code||1); }
+    if(result_code !== 0){ return done([npm_image+' exited with code:'+result_code],result_code||1); }
     return cbc();
   } try {
     proc = spawn(npm_image,args||[],{cwd:workingdir||undefined,env:process.env});
