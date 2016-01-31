@@ -100,7 +100,7 @@ function error_sails_mysql(){return done(pli(['Sails installation not found!','E
 
 function main(){
   return test_git(error_not_npm, function(){
-  return edi(MOD_DIR+'/sails', error_no_sails, function(){
+  return edi(MOD_DIR+'/sails', function(){
   return edi(MOD_DIR+'/sails-mysql', function(mysql_exists){
     if(mysql_exists&&warn){warn(pli(['WARNING - detected sails-mysql.',
 'You may face unexpected behaviour.',
@@ -113,7 +113,7 @@ function main(){
     });// npm install
     });// npm remove
   });// /sails-mysql
-  });// /sails
+  },error_no_sails);// /sails
   });// .gitmodules
 }
 
