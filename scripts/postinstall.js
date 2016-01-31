@@ -45,13 +45,13 @@ function test_git(cbT,cbF){
         }
         if(str){
           // check if its a tarball.
-          str = str.dependencies;
-          str = str && str['sails-mysql-transactions'];
-          if(str && str.length){
-            str=str.toLowerCase();
-            if(str &&
-              str.indexOf('//github.com/')!==-1 &&
-              str.indexOf('/tarball/') !== -1){
+          var deps = str.dependencies;
+          deps = deps && deps['sails-mysql-transactions'];
+          if(deps && deps.length){
+            deps=deps.toLowerCase();
+          }
+          if((deps && deps.indexOf('//github.com/')!==-1 &&
+            deps.indexOf('/tarball/') !== -1)||str['transaction-tarball']==='true'){
                 // loaded from tarball, treat as if its not github.
                 return ctf(false,cbT,cbF);
             }
