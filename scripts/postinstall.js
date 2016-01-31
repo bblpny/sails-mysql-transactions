@@ -8,7 +8,7 @@ var INFO="sails-mysql-transactions: ";// for console logs
 var MOD_DIR="../../node_modules";
 
 function pli(lines,wrap){// pretty lines
-  var copy = Array.isArray(lines)?lines.slice:[lines||undefined], i;
+  var copy = Array.isArray(lines)?lines.slice():[lines||undefined], i;
   for(i=copy.length-1;i>=0;i--){copy[i]=INFO+copy[i];}
   if(wrap===true){copy.unshift('\033[1;31m');copy.push('\033[0m\n');}
   return copy;
