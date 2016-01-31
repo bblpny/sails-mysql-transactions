@@ -28,6 +28,41 @@ function edi(path,cbT,cbF){//exists dir
   function _ws(err,stat){return ctf((!err)&&stat&&stat.isDirectory&&stat.isDirectory(),cbT,cbF);}
   try{return fs.stat(path,_ws);}catch(e){return ftc(false,cbT,cbF);}
 }
+function test_git(cbT,cbF){
+  return efi('.gitmodules',function(){// true callback..
+
+    // if gitmodules exists normally we would error to cbT.
+    // but i'm loading the fork is from a tarball, where it does exist.
+    // so, am check if if the package loading this is directing to the tarball.
+    return fs.readFile('../../package.json','utf8',function(err,str){
+      if(!err && str){
+        // get the package.json as json.
+        try{
+          str=JSON.parse(str);
+        }catch(e){
+          // if couldn't read the json..
+          str = null;
+        }
+        if(str){
+          // check if its a tarball.
+          str = str.dependencies;
+          str = str && str['sails-mysql-transactions'];
+          if(str && str.length){
+            str=str.toLowerCase();
+            if(str &&
+              str.indexOf('//github.com/')!==-1 &&
+              str.indexOf('/tarball/') !== -1){
+                // loaded from tarball, treat as if its not github.
+                return ctf(false,cbT,cbF);
+            }
+          }
+        }
+      }
+      // otherwise, yes, github.
+      return ctf(true,cbT,cbF);
+    }
+  },cbF);//<-- for case where no .gitmodules exist.
+}
 function cli(image,args,workingdir,cb){// call image
   var proc,result_error=null,result_code=null;
   function procdone(err,code){
@@ -64,7 +99,7 @@ function error_no_sails(){return done(pli(['Sails installation not found!','Ensu
 function error_sails_mysql(){return done(pli(['Sails installation not found!','Ensure your package.json, which has sails-mysql-transaction, also includes sails.'],true),1)}
 
 function main(){
-  return efi('.gitmodules', error_not_npm, function(){
+  return test_git(error_not_npm, function(){
   return edi(MOD_DIR+'/sails', error_no_sails, function(){
   return edi(MOD_DIR+'/sails-mysql', function(mysql_exists){
     if(mysql_exists&&warn){warn(pli(['WARNING - detected sails-mysql.',
