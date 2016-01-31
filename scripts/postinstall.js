@@ -121,7 +121,7 @@ function main(){
     );}
     if(note)note('Injecting waterline...');
     return call_npm(['remove','waterline'],MOD_DIR+'/sails', function(){
-    return call_npm(['install',MOD_DIR+'/sails-mysql-transactions/waterline'], MOD_DIR+'/sails', function(){
+    return call_npm(['install',MOD_DIR+'/sails-mysql-transactions/waterline/'], MOD_DIR+'/sails', function(){
       return done('Installation successful.',0);
     });// npm install
     });// npm remove
