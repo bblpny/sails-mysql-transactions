@@ -1,5 +1,5 @@
 //
-// attempts to match the .sh post install 
+// attempts to match the .sh post install
 //
 var fs = require('fs');
 var spawn = require('child_process').spawn;
@@ -25,7 +25,7 @@ function efi(path,cbT,cbF){//exists file
   try{return fs.stat(path,_ws);}catch(e){return ftc(false,cbT,cbF);}
 }
 function edi(path,cbT,cbF){//exists dir
-  function _ws(err,stat){return ftc((!err)&&stat&&stat.isDirectory&&stat.isDirectory(),cbT,cbF);}
+  function _ws(err,stat){return ctf((!err)&&stat&&stat.isDirectory&&stat.isDirectory(),cbT,cbF);}
   try{return fs.stat(path,_ws);}catch(e){return ftc(false,cbT,cbF);}
 }
 function cli(image,args,workingdir,cb){// call image
@@ -59,9 +59,9 @@ function error_not_npm(){return done('Not an NPM install, exiting waterline inje
 
 //# Check whether sails has been already installed or not. If not, this is an
 //# error and we should not proceed.
-function error_no_sails(){return done(pretty_lines(['Sails installation not found!','Ensure your package.json, which has sails-mysql-transaction, also includes sails.'],true),1)}
+function error_no_sails(){return done(pli(['Sails installation not found!','Ensure your package.json, which has sails-mysql-transaction, also includes sails.'],true),1)}
 
-function error_sails_mysql(){return done(pretty_lines(['Sails installation not found!','Ensure your package.json, which has sails-mysql-transaction, also includes sails.'],true),1)}
+function error_sails_mysql(){return done(pli(['Sails installation not found!','Ensure your package.json, which has sails-mysql-transaction, also includes sails.'],true),1)}
 
 function main(){
   return efi('.gitmodules', error_not_npm, function(){
@@ -72,8 +72,8 @@ function main(){
 'Preferably remove sails-mysql from packages before using this in production.'])
     );}
     if(note)note('Injecting waterline...');
-    return execImage('npm',['remove','waterline'],MOD_DIR+'/sails', function(){
-    return execImage('npm',['install',MOD_DIR+'/sails-mysql-transactions/waterline'], MOD_DIR+'/sails', function(){
+    return cli('npm',['remove','waterline'],MOD_DIR+'/sails', function(){
+    return cli('npm',['install',MOD_DIR+'/sails-mysql-transactions/waterline'], MOD_DIR+'/sails', function(){
       return done('Installation successful.',0);
     });// npm install
     });// npm remove
